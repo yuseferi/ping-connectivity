@@ -258,11 +258,22 @@ function handlePingResult(result) {
 // Handle stats update
 function handleStatsUpdate(stats) {
     console.log('Received stats update:', stats);
+    console.log('Stats is array:', Array.isArray(stats));
+    console.log('Stats length:', stats ? stats.length : 'null');
+    console.log('Current state.selectedStatsTarget:', state.selectedStatsTarget);
+    console.log('Current state.targets:', state.targets);
     
     // Store stats by target
-    stats.forEach(stat => {
-        state.stats[stat.target] = stat;
-    });
+    if (Array.isArray(stats)) {
+        stats.forEach(stat => {
+            console.log('Storing stat for target:', stat.target, stat);
+            state.stats[stat.target] = stat;
+        });
+    } else {
+        console.error('Stats is not an array:', typeof stats, stats);
+    }
+    
+    console.log('State.stats after update:', state.stats);
     
     // Update stats display
     updateStatsDisplay();
@@ -362,24 +373,38 @@ function updateTargetLatency(result) {
 
 // Update statistics display
 function updateStatsDisplay() {
-    const targetAddress = state.selectedStatsTarget || 
+    console.log('updateStatsDisplay called');
+    const targetAddress = state.selectedStatsTarget ||
         (state.targets.length > 0 ? state.targets[0].address : null);
     
-    if (!targetAddress) return;
+    console.log('Target address for stats:', targetAddress);
+    console.log('Available stats keys:', Object.keys(state.stats));
+    
+    if (!targetAddress) {
+        console.log('No target address, returning');
+        return;
+    }
     
     const stats = state.stats[targetAddress];
-    if (!stats) return;
+    console.log('Stats for target:', stats);
     
-    elements.statMin.textContent = stats.min_latency_ms !== null 
+    if (!stats) {
+        console.log('No stats found for target, returning');
+        return;
+    }
+    
+    console.log('Updating display with stats:', stats);
+    elements.statMin.textContent = stats.min_latency_ms !== null
         ? stats.min_latency_ms.toFixed(1) : '--';
-    elements.statMax.textContent = stats.max_latency_ms !== null 
+    elements.statMax.textContent = stats.max_latency_ms !== null
         ? stats.max_latency_ms.toFixed(1) : '--';
-    elements.statAvg.textContent = stats.avg_latency_ms !== null 
+    elements.statAvg.textContent = stats.avg_latency_ms !== null
         ? stats.avg_latency_ms.toFixed(1) : '--';
-    elements.statJitter.textContent = stats.jitter_ms !== null 
+    elements.statJitter.textContent = stats.jitter_ms !== null
         ? stats.jitter_ms.toFixed(1) : '--';
     elements.statLoss.textContent = stats.packet_loss_percent.toFixed(1);
     elements.statTotal.textContent = stats.total_pings;
+    console.log('Display updated successfully');
 }
 
 // Render targets list
