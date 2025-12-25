@@ -62,16 +62,25 @@ pub async fn start_pinging(
                 // Execute ping synchronously (it's already fast)
                 let result = pinger.ping(&target, sequence);
                 
+                log::debug!("Ping result for {}: {:?}", target.address, result);
+                
                 // Add result to state
                 state_clone.add_result(result.clone());
                 
                 // Emit event to frontend
-                let _ = app_clone.emit("ping-result", &result);
+                match app_clone.emit("ping-result", &result) {
+                    Ok(_) => log::debug!("Emitted ping-result event for {}", target.address),
+                    Err(e) => log::error!("Failed to emit ping-result event: {}", e),
+                }
             }
 
             // Emit stats update
             let stats = state_clone.get_all_stats();
-            let _ = app_clone.emit("stats-update", &stats);
+            log::debug!("Emitting stats-update with {} stats", stats.len());
+            match app_clone.emit("stats-update", &stats) {
+                Ok(_) => log::debug!("Emitted stats-update event"),
+                Err(e) => log::error!("Failed to emit stats-update event: {}", e),
+            }
 
             // Wait for next interval
             let interval_ms = state_clone.get_ping_interval();

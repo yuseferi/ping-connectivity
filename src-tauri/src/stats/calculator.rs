@@ -124,6 +124,12 @@ impl StatsCalculator {
 
     /// Update statistics with a new ping result
     pub fn update(&mut self, result: &PingResult) {
+        // If the target doesn't exist in stats, create it
+        if !self.stats.contains_key(&result.target) {
+            let target = PingTarget::new(result.target.clone(), result.target_label.clone());
+            self.stats.insert(result.target.clone(), TargetStats::new(&target));
+        }
+        
         if let Some(stats) = self.stats.get_mut(&result.target) {
             stats.update(result);
         }
