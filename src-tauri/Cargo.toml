@@ -1,0 +1,32 @@
+[package]
+name = "ping-connectivity"
+version = "1.0.0"
+description = "Cross-platform network connectivity monitor with ping statistics"
+authors = ["Ping Connectivity Team"]
+edition = "2021"
+rust-version = "1.70"
+
+[lib]
+name = "ping_connectivity_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full", "sync"] }
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4"
+env_logger = "0.11"
+parking_lot = "0.12"
+uuid = { version = "1", features = ["v4", "serde"] }
+dirs = "5"
+thiserror = "1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Connectivity Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="app-icon">🌐</span>
+                <h1>Ping Connectivity Monitor</h1>
+            </div>
+            <div class="header-right">
+                <span id="connection-status" class="status-indicator disconnected">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Stopped</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Targets Section -->
+            <section class="targets-section">
+                <div class="section-header">
+                    <h2>Targets</h2>
+                    <button id="add-target-btn" class="btn btn-primary btn-sm">
+                        <span>+</span> Add Target
+                    </button>
+                </div>
+                <div id="targets-list" class="targets-list">
+                    <!-- Targets will be populated here -->
+                </div>
+            </section>
+
+            <!-- Chart Section -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <h2>Latency Over Time</h2>
+                    <select id="chart-target-select" class="select-input">
+                        <option value="all">All Targets</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="latency-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <div class="section-header">
+                    <h2>Statistics</h2>
+                    <select id="stats-target-select" class="select-input">
+                        <!-- Options will be populated -->
+                    </select>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Min Latency</div>
+                        <div class="stat-value" id="stat-min">--</div>
+                        <div class="stat-unit">ms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Max Latency</div>
+                        <div class="stat-value" id="stat-max">--</div>
+                        <div class="stat-unit">ms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Latency</div>
+                        <div class="stat-value" id="stat-avg">--</div>
+                        <div class="stat-unit">ms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Jitter</div>
+                        <div class="stat-value" id="stat-jitter">--</div>
+                        <div class="stat-unit">ms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Packet Loss</div>
+                        <div class="stat-value" id="stat-loss">--</div>
+                        <div class="stat-unit">%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Pings</div>
+                        <div class="stat-value" id="stat-total">--</div>
+                        <div class="stat-unit">pings</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Control Bar -->
+        <footer class="control-bar">
+            <div class="control-buttons">
+                <button id="start-btn" class="btn btn-success">
+                    <span>▶</span> Start
+                </button>
+                <button id="stop-btn" class="btn btn-danger" disabled>
+                    <span>⏹</span> Stop
+                </button>
+                <button id="reset-btn" class="btn btn-secondary">
+                    <span>↺</span> Reset
+                </button>
+            </div>
+            <div class="control-actions">
+                <button id="logs-btn" class="btn btn-outline">
+                    <span>📁</span> Open Logs
+                </button>
+                <button id="settings-btn" class="btn btn-outline">
+                    <span>⚙</span> Settings
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙ Settings</h2>
+                <button class="modal-close" id="close-settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Targets Management -->
+                <div class="settings-section">
+                    <h3>Ping Targets</h3>
+                    <div id="settings-targets-list" class="settings-targets-list">
+                        <!-- Targets will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Add New Target -->
+                <div class="settings-section">
+                    <h3>Add New Target</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-target-address">Address</label>
+                            <input type="text" id="new-target-address" placeholder="e.g., 1.1.1.1 or google.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-target-label">Label</label>
+                            <input type="text" id="new-target-label" placeholder="e.g., Cloudflare DNS">
+                        </div>
+                        <button id="add-new-target-btn" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+
+                <!-- Quick Add Presets -->
+                <div class="settings-section">
+                    <h3>Quick Add Presets</h3>
+                    <div id="preset-buttons" class="preset-buttons">
+                        <!-- Presets will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Ping Settings -->
+                <div class="settings-section">
+                    <h3>Ping Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ping-interval">Interval (ms)</label>
+                            <input type="number" id="ping-interval" value="1000" min="100" step="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="ping-timeout">Timeout (ms)</label>
+                            <input type="number" id="ping-timeout" value="5000" min="1000" step="1000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Target Modal -->
+    <div id="add-target-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>Add Target</h2>
+                <button class="modal-close" id="close-add-target">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="quick-target-address">Address</label>
+                    <input type="text" id="quick-target-address" placeholder="e.g., 1.1.1.1">
+                </div>
+                <div class="form-group">
+                    <label for="quick-target-label">Label</label>
+                    <input type="text" id="quick-target-label" placeholder="e.g., My Server">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-add-target" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-add-target" class="btn btn-primary">Add Target</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
