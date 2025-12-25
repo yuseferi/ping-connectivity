@@ -210,6 +210,11 @@ function setupEventListeners() {
         state.selectedStatsTarget = e.target.value;
         updateStatsDisplay();
     });
+    
+    // Chart target select
+    elements.chartTargetSelect.addEventListener('change', () => {
+        rebuildChart();
+    });
 }
 
 // Set up Tauri event listeners
@@ -229,6 +234,8 @@ async function setupTauriListeners() {
 
 // Handle incoming ping result
 function handlePingResult(result) {
+    console.log('Received ping result:', result);
+    
     // Update recent pings for this target
     if (!state.recentPings[result.target]) {
         state.recentPings[result.target] = [];
@@ -250,6 +257,8 @@ function handlePingResult(result) {
 
 // Handle stats update
 function handleStatsUpdate(stats) {
+    console.log('Received stats update:', stats);
+    
     // Store stats by target
     stats.forEach(stat => {
         state.stats[stat.target] = stat;
